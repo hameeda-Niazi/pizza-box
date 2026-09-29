@@ -1,0 +1,19 @@
+# Environment variables and deployment secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies and build output
+**/node_modules/
+**/dist/
+
+# Runtime uploads and logs
+backend/uploads/
+**/logs/
+*.log
+
+# Local editor/system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
