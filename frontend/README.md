@@ -2,9 +2,9 @@
 
 ## Local development
 
-Install dependencies with `npm install`, then run `npm run dev`. The API defaults to `http://localhost:5000/api`; override it with `VITE_API_URL` in a private local `.env` file when needed.
+Install dependencies with `npm install`, then run `npm run dev`. During development, the API defaults to `http://localhost:5000/api`; override it with `VITE_API_URL` in a private local `.env` file when needed. Production builds use the same-origin `/api` path unless `VITE_API_URL` is set.
 
-Run `npm run lint` and `npm run build` before deployment. Deploy the generated `dist` directory to a static host and configure the backend `CLIENT_URL` with the exact deployed origin. Frontend environment variables are bundled into public code, so never put credentials or private keys in them.
+Run `npm run lint` and `npm run build` before deployment. For a separately hosted backend, set `VITE_API_URL` to its public API URL (for example, `https://api.example.com/api`) in the frontend build environment and rebuild; for a same-origin reverse proxy, route `/api` to the backend. Deploy the generated `dist` directory to a static host and configure the backend `CLIENT_URL` with the exact deployed origin. Frontend environment variables are bundled into public code, so never put credentials or private keys in them.
 
 Administrator sign-in is intentionally unlinked from public navigation. Open `/admin/login` directly; the dashboard verifies administrator role with the API.
 
