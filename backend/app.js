@@ -134,25 +134,38 @@ app.use((err, req, res, next) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
+let initializationPromise;
+
+const initializeApp = () => {
+  if (!initializationPromise) {
+    initializationPromise = (async () => {
+      validateProductionConfiguration();
+      await connectDB();
+      await seedProducts();
+      await ensureAdmin();
+      if (redisClient && !redisClient.isOpen) await redisClient.connect();
+    })().catch((error) => {
+      initializationPromise = undefined;
+      throw error;
+    });
+  }
+  return initializationPromise;
+};
 
 const startServer = async () => {
-  validateProductionConfiguration();
-
-  await connectDB();
-  await seedProducts();
-  await ensureAdmin();
-  if (redisClient && !redisClient.isOpen) await redisClient.connect();
+  await initializeApp();
+  if (process.env.VERCEL) return app;
 
   return app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 };
 
-if (require.main === module) {
+if (require.main === module && !process.env.VERCEL) {
   startServer().catch(() => {
     console.error("Server failed to start; verify private settings and database access.");
     process.exitCode = 1;
   });
 }
 
-module.exports = { app, startServer, validateProductionConfiguration };
+module.exports = { app, initializeApp, startServer, validateProductionConfiguration };

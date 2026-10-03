@@ -9,8 +9,7 @@ const connectDB = async () => {
     await mongoose.connect(process.env.MONGO_URI, options);
     console.log("MongoDB connected successfully");
   } catch {
-    console.error("MongoDB connection failed; verify private connection settings.");
-    process.exit(1);
+    throw new Error("MongoDB connection failed; verify private connection settings.");
   }
 };
 

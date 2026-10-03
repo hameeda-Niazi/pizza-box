@@ -7,9 +7,9 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "create-admin": "node scripts/createAdmin.js",
-    "test:smoke": "node scripts/productionSmoke.js",
     "rotate-app-secrets": "node scripts/rotateAppSecrets.js",
-    "test:config": "node scripts/configSmoke.js"
+    "test:config": "node scripts/configSmoke.js",
+    "test:smoke": "node scripts/productionSmoke.js"
   },
   "keywords": [],
   "author": "",
@@ -27,7 +27,7 @@
     "mongoose": "^9.10.1",
     "multer": "^2.4.0",
     "rate-limit-redis": "^6.0.1",
-    "redis": "^6.2.1"
+    "redis": "^6.3.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
