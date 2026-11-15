@@ -7,6 +7,7 @@ Install dependencies with `npm install`. Copy `.env.example` to `.env` and fill 
 Required settings:
 
 - `MONGO_URI`: MongoDB connection string for the application database.
+- `MONGO_DB_NAME`: optional explicit database name when it is not already specified in `MONGO_URI`.
 - `JWT_SECRET`: a private random value of at least 32 bytes.
 - `CLIENT_URL`: the exact frontend origin(s) allowed to call the API; separate multiple origins with commas.
 - `ADMIN_EMAIL` and `ADMIN_PASSWORD`: a dedicated administrator account; use a unique password of 12-72 bytes.
