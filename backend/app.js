@@ -32,10 +32,12 @@ const createSharedRateLimitStore = (prefix) => redisClient
     prefix,
   })
   : undefined;
-const clientOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
+const parseClientOrigins = (rawValue = "") => rawValue
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
+
+const clientOrigins = parseClientOrigins(process.env.CLIENT_URL || "http://localhost:5173");
 const isLocalDevelopmentOrigin = (origin) => {
   if (process.env.NODE_ENV === "production") return false;
   try {
@@ -72,8 +74,19 @@ const validateProductionConfiguration = () => {
   }
   if (process.env.NODE_ENV !== "production") return;
 
-  const origins = (process.env.CLIENT_URL || "").split(",").map((origin) => new URL(origin.trim()));
-  if (origins.length === 0 || origins.some((origin) => origin.protocol !== "https:")) {
+  const configuredOrigins = parseClientOrigins(process.env.CLIENT_URL || "");
+  if (configuredOrigins.length === 0) {
+    throw new Error("Production CLIENT_URL must contain HTTPS origins");
+  }
+
+  let origins;
+  try {
+    origins = configuredOrigins.map((origin) => new URL(origin));
+  } catch {
+    throw new Error("Production CLIENT_URL must contain HTTPS origins");
+  }
+
+  if (origins.some((origin) => origin.protocol !== "https:")) {
     throw new Error("Production CLIENT_URL must contain HTTPS origins");
   }
   if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
@@ -81,15 +94,6 @@ const validateProductionConfiguration = () => {
   }
   if (Buffer.byteLength(process.env.ADMIN_PASSWORD) < 12 || Buffer.byteLength(process.env.ADMIN_PASSWORD) > 72) {
     throw new Error("ADMIN_PASSWORD must be between 12 and 72 bytes");
-  }
-  const hasCloudinary = [
-    process.env.CLOUDINARY_CLOUD_NAME,
-    process.env.CLOUDINARY_API_KEY,
-    process.env.CLOUDINARY_API_SECRET,
-  ].every(Boolean);
-  const hasPersistentHttpsUploads = process.env.UPLOADS_DIR && process.env.PUBLIC_API_URL?.startsWith("https://");
-  if (!hasCloudinary && !hasPersistentHttpsUploads) {
-    throw new Error("Configure Cloudinary or persistent HTTPS upload storage");
   }
 };
 

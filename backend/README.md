@@ -29,6 +29,7 @@ The administrator routes are intentionally not linked from the public site. Open
 - Set `CLIENT_URL` to the deployed frontend origin and `PUBLIC_API_URL` to the deployed API origin.
 - Set `TRUST_PROXY_HOPS` to the number of trusted load balancer/reverse-proxy hops; leave it at `0` when the API is directly exposed.
 - Configure Cloudinary credentials for durable object storage, or mount `UPLOADS_DIR` on a persistent volume and set `PUBLIC_API_URL` to the HTTPS API origin. Production uploads refuse the default ephemeral local directory.
+- Image storage is not required for API startup. Until Cloudinary or persistent storage is configured, image upload requests return HTTP 503 while other API routes remain available.
 - Set `REDIS_URL` to a private Redis service to share rate limits across backend instances. Without it, rate limits are per-process and appropriate only for a single instance.
 - Keep `.env`, uploads, logs, and backups private. Rotate any credentials that were ever committed, pasted into chat, or used as demo credentials.
 - `npm run build` in `frontend` and `npm start` in `backend` are the release commands. Contact and order mutations require a reachable MongoDB instance.

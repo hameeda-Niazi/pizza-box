@@ -38,9 +38,9 @@ const run = async () => {
   assert.equal(isValidEmail("admin@example.com"), true);
   assert.equal(isValidEmail("bad address@example.com"), false);
 
-  phase = "missing storage guard";
+  phase = "optional image storage configuration";
   process.env.CLOUDINARY_API_SECRET = "";
-  assert.throws(validateProductionConfiguration, /persistent HTTPS upload storage/);
+  assert.doesNotThrow(validateProductionConfiguration);
   process.env.CLOUDINARY_API_SECRET = "smoke-secret";
   phase = "HTTP production origin guard";
   process.env.CLIENT_URL = "http://localhost:5173";
