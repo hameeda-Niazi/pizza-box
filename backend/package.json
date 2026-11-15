@@ -8,6 +8,7 @@
     "dev": "nodemon app.js",
     "create-admin": "node scripts/createAdmin.js",
     "rotate-app-secrets": "node scripts/rotateAppSecrets.js",
+    "diagnose:mongodb": "node scripts/diagnoseMongoConnection.js",
     "test:config": "node scripts/configSmoke.js",
     "test:smoke": "node scripts/productionSmoke.js"
   },

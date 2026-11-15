@@ -1,8 +1,5 @@
 import { Link } from "react-router-dom";
 import {
-  FiFacebook,
-  FiInstagram,
-  FiTwitter,
   FiMapPin,
   FiPhone,
   FiMail,
@@ -22,17 +19,6 @@ const Footer = () => {
             Made with quality ingredients and lots of love.
           </p>
 
-          <div className="mt-5 flex gap-3">
-            <a href="#" className="rounded-full bg-gray-800 p-3 hover:bg-orange-600">
-              <FiFacebook />
-            </a>
-            <a href="#" className="rounded-full bg-gray-800 p-3 hover:bg-orange-600">
-              <FiInstagram />
-            </a>
-            <a href="#" className="rounded-full bg-gray-800 p-3 hover:bg-orange-600">
-              <FiTwitter />
-            </a>
-          </div>
         </div>
 
         <div>

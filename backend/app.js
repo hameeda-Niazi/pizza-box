@@ -4,7 +4,8 @@ const helmet = require("helmet");
 const { rateLimit } = require("express-rate-limit");
 const { RedisStore } = require("rate-limit-redis");
 const { createClient } = require("redis");
-require("dotenv").config();
+const path = require("node:path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const connectDB = require("./config/db");
 const seedProducts = require("./config/seedProducts");

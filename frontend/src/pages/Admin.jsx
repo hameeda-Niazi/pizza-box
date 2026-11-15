@@ -10,12 +10,14 @@ const Admin = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [form, setForm] = useState(blankProduct);
   const [editingId, setEditingId] = useState("");
   const [notice, setNotice] = useState("");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [updatingStatusId, setUpdatingStatusId] = useState("");
+  const [updatingProductId, setUpdatingProductId] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,10 +27,11 @@ const Admin = () => {
       return;
     }
 
-    Promise.all([api.get("/orders"), api.get("/products")])
-      .then(([ordersResponse, productsResponse]) => {
+    Promise.all([api.get("/orders"), api.get("/products"), api.get("/contact")])
+      .then(([ordersResponse, productsResponse, messagesResponse]) => {
         setOrders(ordersResponse.data);
         setProducts(productsResponse.data);
+        setMessages(messagesResponse.data);
       })
       .catch((error) => {
         setNotice(error.response?.data?.message || "Unable to load the dashboard.");
@@ -104,6 +107,20 @@ const Admin = () => {
     }
   };
 
+  const toggleAvailability = async (product) => {
+    setUpdatingProductId(product._id);
+    setNotice("");
+    try {
+      const { data } = await api.put(`/products/${product._id}`, { isAvailable: product.isAvailable === false });
+      setProducts((current) => current.map((item) => item._id === product._id ? data.product : item));
+      setNotice(data.product.isAvailable ? "Menu item is available again." : "Menu item marked unavailable.");
+    } catch (error) {
+      setNotice(error.response?.data?.message || "Unable to update menu availability.");
+    } finally {
+      setUpdatingProductId("");
+    }
+  };
+
   if (loading) return <section className="px-5 py-20 text-center text-gray-500">Loading dashboard...</section>;
 
   return (
@@ -123,7 +140,7 @@ const Admin = () => {
           Logout
         </button>
       </div>
-      {notice && <p className="mt-6 rounded-xl bg-orange-50 p-4 font-medium text-orange-800">{notice}</p>}
+      {notice && <p role="status" className="mt-6 rounded-xl bg-orange-50 p-4 font-medium text-orange-800">{notice}</p>}
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[360px_1fr]">
         <form onSubmit={saveProduct} className="h-fit rounded-2xl bg-white p-6 shadow-sm">
@@ -143,8 +160,29 @@ const Admin = () => {
           <div className="rounded-2xl bg-white p-6 shadow-sm">
             <h2 className="text-xl font-black">Products ({products.length})</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {products.map((product) => <article key={product._id} className="rounded-xl border border-orange-100 p-4"><div className="flex gap-3">{product.image && <img src={product.image} alt="" className="h-14 w-14 rounded-lg object-cover" />}<div><p className="font-bold">{product.name}</p><p className="mt-1 text-sm text-gray-500">{product.category}</p><p className="mt-2 font-bold text-orange-600">PKR {Number(product.price).toLocaleString()}</p></div></div><div className="mt-4 flex gap-2"><button onClick={() => editProduct(product)} className="rounded-lg bg-orange-50 px-3 py-2 text-sm font-bold text-orange-700">Edit</button><button onClick={() => deleteProduct(product._id)} className="rounded-lg bg-red-50 px-3 py-2 text-sm font-bold text-red-700">Delete</button></div></article>)}
+              {products.length === 0 && <p className="rounded-xl bg-gray-50 p-5 text-gray-500 sm:col-span-2">No menu items yet. Add the first one with the form.</p>}
+              {products.map((product) => <article key={product._id} className="rounded-xl border border-orange-100 p-4"><div className="flex gap-3">{product.image && <img src={product.image} alt="" className="h-14 w-14 rounded-lg object-cover" />}<div><p className="font-bold">{product.name}</p><p className="mt-1 text-sm text-gray-500">{product.category} · {product.isAvailable === false ? "Unavailable" : "Available"}</p><p className="mt-2 font-bold text-orange-600">PKR {Number(product.price).toLocaleString()}</p></div></div><div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={() => editProduct(product)} className="rounded-lg bg-orange-50 px-3 py-2 text-sm font-bold text-orange-700">Edit</button><button type="button" disabled={updatingProductId === product._id} onClick={() => toggleAvailability(product)} className="rounded-lg bg-gray-100 px-3 py-2 text-sm font-bold text-gray-700 disabled:opacity-60">{updatingProductId === product._id ? "Updating…" : product.isAvailable === false ? "Make available" : "Mark unavailable"}</button><button type="button" onClick={() => deleteProduct(product._id)} className="rounded-lg bg-red-50 px-3 py-2 text-sm font-bold text-red-700">Delete</button></div></article>)}
             </div>
+          </div>
+
+          <div className="rounded-2xl bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-black">Contact messages ({messages.length})</h2>
+            {messages.length === 0 ? (
+              <p className="mt-4 rounded-xl bg-gray-50 p-5 text-center text-gray-500">No customer messages yet.</p>
+            ) : (
+              <div className="mt-4 space-y-3">
+                {messages.map((message) => (
+                  <article key={message._id} className="rounded-xl border border-gray-100 p-4">
+                    <div className="flex flex-wrap justify-between gap-2">
+                      <p className="font-bold">{message.name}</p>
+                      <time className="text-sm text-gray-500" dateTime={message.createdAt}>{new Date(message.createdAt).toLocaleString("en-PK")}</time>
+                    </div>
+                    <a className="mt-1 inline-block text-sm font-semibold text-orange-700 hover:underline" href={`mailto:${encodeURIComponent(message.email)}`}>{message.email}</a>
+                    <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-gray-700">{message.message}</p>
+                  </article>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="rounded-2xl bg-white p-6 shadow-sm">

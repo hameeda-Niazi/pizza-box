@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 const Login = ({ isAdminLogin = false }) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [form, setForm] = useState({
     email: "",
@@ -38,7 +39,10 @@ const Login = ({ isAdminLogin = false }) => {
       localStorage.setItem("user", JSON.stringify(response.data.user));
       window.dispatchEvent(new Event("auth-changed"));
 
-      navigate(isAdminLogin ? "/admin" : "/menu");
+      const returnTo = !isAdminLogin && typeof location.state?.from === "string" && location.state.from.startsWith("/")
+        ? location.state.from
+        : "/menu";
+      navigate(isAdminLogin ? "/admin" : returnTo, { replace: true });
     } catch (error) {
       setStatus(
         error.response?.data?.message ||
@@ -62,7 +66,7 @@ const Login = ({ isAdminLogin = false }) => {
           <p className="mt-2 text-gray-500">
             {isAdminLogin
               ? "Sign in with your Pizza Box administrator account."
-              : "Login to your Pizza Box account."}
+              : location.state?.notice || "Login to your Pizza Box account."}
           </p>
         </div>
 

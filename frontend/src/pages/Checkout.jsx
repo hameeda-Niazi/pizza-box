@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 const Checkout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [cart, setCart] = useState(() => {
     try {
@@ -43,13 +44,11 @@ const Checkout = () => {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      alert("Please login before placing an order.");
-      navigate("/login");
+      navigate("/login", { state: { from: `${location.pathname}${location.search}`, notice: "Sign in to complete your order." } });
       return;
     }
 
     if (cart.length === 0) {
-      alert("Your cart is empty.");
       navigate("/menu");
       return;
     }
@@ -128,7 +127,7 @@ const Checkout = () => {
           onSubmit={placeOrder}
           className="rounded-2xl bg-white p-7 shadow-sm"
         >
-          {status && <p role="alert" className="mb-5 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700">{status}</p>}
+          {status && <p role="alert" className="mb-5 rounded-xl bg-amber-50 p-3 text-sm font-semibold text-amber-900">{status}</p>}
           <h2 className="text-2xl font-black">Delivery Information</h2>
 
           <div className="mt-6">

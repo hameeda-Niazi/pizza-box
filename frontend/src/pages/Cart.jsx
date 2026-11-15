@@ -13,8 +13,12 @@ const Cart = () => {
 
   const updateCart = (updatedCart) => {
     setCart(updatedCart);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-    window.dispatchEvent(new Event("cart-updated"));
+    try {
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      window.dispatchEvent(new Event("cart-updated"));
+    } catch {
+      setCart(cart);
+    }
   };
 
   const increase = (id) => {
@@ -106,7 +110,9 @@ const Cart = () => {
 
                 <div className="mt-3 flex items-center gap-3">
                   <button
+                    type="button"
                     onClick={() => decrease(item._id)}
+                    aria-label={item.quantity === 1 ? `Remove one ${item.name}` : `Decrease ${item.name} quantity`}
                     className="rounded-lg bg-gray-100 p-2"
                   >
                     <FiMinus />
@@ -115,6 +121,7 @@ const Cart = () => {
                   <span className="font-bold">{item.quantity}</span>
 
                   <button
+                    type="button"
                     onClick={() => increase(item._id)}
                     disabled={item.quantity >= 99}
                     aria-label={`Add one ${item.name}`}
@@ -126,6 +133,8 @@ const Cart = () => {
               </div>
 
               <button
+                type="button"
+                aria-label={`Remove ${item.name} from cart`}
                 onClick={() => remove(item._id)}
                 className="rounded-lg p-3 text-red-500 hover:bg-red-50"
               >

@@ -11,7 +11,7 @@ const Orders = () => {
 
   useEffect(() => {
     if (!localStorage.getItem("token")) {
-      navigate("/login");
+      navigate("/login", { state: { from: "/orders", notice: "Sign in to view your order history." } });
       return;
     }
 
@@ -23,7 +23,7 @@ const Orders = () => {
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           window.dispatchEvent(new Event("auth-changed"));
-          navigate("/login");
+          navigate("/login", { state: { from: "/orders", notice: "Your session expired. Sign in to view your order history." } });
           return;
         }
         setError(requestError.response?.data?.message || "We could not load your orders.");

@@ -2,12 +2,13 @@ import { FiShoppingCart } from "react-icons/fi";
 
 const ProductCard = ({ product, onAddToCart, canOrder = true }) => {
   return (
-    <div className="group overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+    <article className="group overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
       <div className="h-52 overflow-hidden bg-orange-50">
         {product.image ? (
           <img
             src={product.image}
             alt={product.name}
+            loading="lazy"
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           />
         ) : (
@@ -31,6 +32,8 @@ const ProductCard = ({ product, onAddToCart, canOrder = true }) => {
         </p>
 
         <button
+          type="button"
+          aria-label={canOrder ? `Add ${product.name} to cart` : `${product.name}: ordering unavailable`}
           onClick={() => onAddToCart(product)}
           disabled={!canOrder}
           className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-3 font-semibold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60"
@@ -39,7 +42,7 @@ const ProductCard = ({ product, onAddToCart, canOrder = true }) => {
           {canOrder ? "Add to Cart" : "Ordering unavailable"}
         </button>
       </div>
-    </div>
+    </article>
   );
 };
 

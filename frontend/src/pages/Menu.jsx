@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import { products } from "../data/Products";
 import api from "../services/api";
@@ -6,11 +7,14 @@ import api from "../services/api";
 const curatedImages = new Map(products.map((product) => [product.name, product.image]));
 
 const Menu = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedCategory = searchParams.get("category");
   const [menuProducts, setMenuProducts] = useState(products);
   const [menuReady, setMenuReady] = useState(false);
   const [menuError, setMenuError] = useState("");
-  const [category, setCategory] = useState("All");
+  const [category, setCategory] = useState(requestedCategory || "All");
   const [search, setSearch] = useState("");
+  const [cartNotice, setCartNotice] = useState("");
   const categories = ["All", "Pizzas", "Burgers", "Sides", "Wraps", "Drinks", "Desserts", "Deals"];
 
   useEffect(() => {
@@ -72,7 +76,7 @@ const Menu = () => {
     );
 
     if (existingItem?.quantity >= 99) {
-      alert("You can add up to 99 of this item per order.");
+      setCartNotice("You can add up to 99 of each item per order.");
       return;
     }
 
@@ -94,10 +98,13 @@ const Menu = () => {
       ];
     }
 
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-    window.dispatchEvent(new Event("cart-updated"));
-
-    alert(`${product.name} added to cart!`);
+    try {
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      window.dispatchEvent(new Event("cart-updated"));
+      setCartNotice(`${product.name} added to your cart.`);
+    } catch {
+      setCartNotice("Your cart could not be saved. Check your browser storage settings and try again.");
+    }
   };
 
   return (
@@ -116,6 +123,7 @@ const Menu = () => {
 
       <div className="mx-auto mt-10 max-w-xl">
         <input
+          aria-label="Search menu"
           type="text"
           placeholder="Search food..."
           value={search}
@@ -128,7 +136,12 @@ const Menu = () => {
         {categories.map((item) => (
           <button
             key={item}
-            onClick={() => setCategory(item)}
+            type="button"
+            aria-pressed={category === item}
+            onClick={() => {
+              setCategory(item);
+              setSearchParams(item === "All" ? {} : { category: item }, { replace: true });
+            }}
             className={`rounded-full px-5 py-2.5 font-semibold transition ${
               category === item
                 ? "bg-orange-600 text-white"
@@ -141,15 +154,17 @@ const Menu = () => {
       </div>
 
       {menuError && <p role="alert" className="mx-auto mt-8 max-w-2xl rounded-xl bg-amber-50 p-4 text-center font-medium text-amber-800">{menuError}</p>}
+      {cartNotice && <p role="status" className="mx-auto mt-5 max-w-2xl rounded-xl bg-green-50 p-3 text-center font-medium text-green-800">{cartNotice}</p>}
       {!menuReady && <p role="status" className="mt-8 text-center text-gray-500">Loading the current menu...</p>}
 
-      {filteredProducts.length === 0 ? (
+      {menuReady && filteredProducts.length === 0 ? (
         <div className="py-20 text-center">
           <p className="text-lg font-semibold text-gray-700">
-            No products found.
+            {search ? `No menu items match “${search}”.` : "No items are available in this category right now."}
           </p>
+          {search && <button type="button" onClick={() => setSearch("")} className="mt-3 font-bold text-orange-600 hover:text-orange-700">Clear search</button>}
         </div>
-      ) : (
+      ) : menuReady && (
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredProducts.map((product) => (
             <ProductCard

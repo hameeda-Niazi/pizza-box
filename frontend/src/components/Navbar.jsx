@@ -49,7 +49,7 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 border-b border-orange-100 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
-        <Link to="/" className="text-2xl font-black text-orange-600">
+        <Link to="/" aria-label="Pizza Box home" className="text-2xl font-black text-orange-600">
           Pizza<span className="text-gray-900">Box</span>
         </Link>
 
@@ -86,8 +86,9 @@ const Navbar = () => {
           >
             <FiShoppingCart size={21} />
             <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-orange-600 text-xs font-bold text-white">
-              {cartCount}
+              {cartCount > 99 ? "99+" : cartCount}
             </span>
+            <span className="sr-only">Shopping cart, {cartCount} items</span>
           </Link>
 
           {user ? (
@@ -107,8 +108,12 @@ const Navbar = () => {
           )}
 
           <button
+            type="button"
             onClick={() => setOpen(!open)}
             className="rounded-lg p-2 text-gray-800 md:hidden"
+            aria-label={open ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={open}
+            aria-controls="mobile-navigation"
           >
             {open ? <FiX size={25} /> : <FiMenu size={25} />}
           </button>
@@ -116,14 +121,14 @@ const Navbar = () => {
       </div>
 
       {open && (
-        <div className="border-t border-orange-100 bg-white px-5 py-5 md:hidden">
+        <div id="mobile-navigation" className="border-t border-orange-100 bg-white px-5 py-5 md:hidden">
           <div className="flex flex-col gap-4">
             {links.map((link) => (
               <NavLink
                 key={link.path}
                 to={link.path}
                 onClick={() => setOpen(false)}
-                className="font-medium text-gray-700 hover:text-orange-600"
+                className={({ isActive }) => `font-medium ${isActive ? "text-orange-600" : "text-gray-700 hover:text-orange-600"}`}
               >
                 {link.name}
               </NavLink>
@@ -134,7 +139,7 @@ const Navbar = () => {
                 <NavLink
                   to="/orders"
                   onClick={() => setOpen(false)}
-                  className="font-medium text-gray-700 hover:text-orange-600"
+                  className={({ isActive }) => `font-medium ${isActive ? "text-orange-600" : "text-gray-700 hover:text-orange-600"}`}
                 >
                   My Orders
                 </NavLink>

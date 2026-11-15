@@ -72,7 +72,7 @@ const Deals = () => {
               </div>
 
               <Link
-                to="/menu"
+                to="/menu?category=Deals"
                 className="mt-6 block rounded-xl bg-orange-600 px-5 py-3 text-center font-bold text-white hover:bg-orange-700"
               >
                 Order Deal
