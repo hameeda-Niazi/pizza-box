@@ -22,6 +22,7 @@ The administrator routes are intentionally not linked from the public site. Open
 ## Production checklist
 
 - Use HTTPS for the frontend and API, a production MongoDB user restricted to the application database, and a unique strong `JWT_SECRET`.
+- For Vercel, set the project root directory to `backend`. The checked-in `vercel.json` builds the root-relative `api/index.js` handler, which initializes MongoDB before dispatching requests. Configure environment variables in the Vercel project settings; the ignored local `.env` file is not deployed.
 - After rotating an exposed MongoDB password in MongoDB Atlas, replace the private `MONGO_URI` with the new connection string, verify connectivity, and revoke the old database credential. Never paste the URI into chat or commit it.
 - Set `NODE_ENV=production` so the API only accepts explicitly configured CORS origins.
 - Set `CLIENT_URL` to the deployed frontend origin and `PUBLIC_API_URL` to the deployed API origin.

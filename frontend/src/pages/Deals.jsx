@@ -1,35 +1,29 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { products } from "../data/Products";
-
-const dealImages = new Map(
-  products.filter((product) => product.category === "Deals").map((product) => [product._id, product.image])
-);
-
-const deals = [
-  {
-    name: "Family Feast",
-    description: "2 Large Pizzas + 1.5L Drink + Loaded Fries",
-    price: 2499,
-    oldPrice: 2999,
-    image: dealImages.get("deal-family"),
-  },
-  {
-    name: "Couple Deal",
-    description: "1 Medium Pizza + 2 Drinks + Fries",
-    price: 1399,
-    oldPrice: 1699,
-    image: dealImages.get("deal-couple"),
-  },
-  {
-    name: "Burger Deal",
-    description: "2 Chicken Burgers + Fries + 2 Drinks",
-    price: 1199,
-    oldPrice: 1499,
-    image: dealImages.get("deal-burger"),
-  },
-];
+import api from "../services/api";
 
 const Deals = () => {
+  const [deals, setDeals] = useState(() => products.filter((product) => product.category === "Deals"));
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    api.get("/products")
+      .then(({ data }) => {
+        if (!Array.isArray(data)) throw new Error("Menu response was not a product list");
+        if (active) setDeals(data.filter((product) => product.category === "Deals" && product.isAvailable !== false));
+      })
+      .catch(() => {
+        if (active) setError("Live deals could not be refreshed. Prices may not be current; check the menu before ordering.");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <section className="mx-auto max-w-7xl px-5 py-14">
       <div className="text-center">
@@ -44,7 +38,11 @@ const Deals = () => {
         </p>
       </div>
 
-      <div className="mt-12 grid gap-7 md:grid-cols-2 lg:grid-cols-3">
+      {error && <p role="alert" className="mx-auto mt-8 max-w-2xl rounded-xl bg-amber-50 p-4 text-center font-medium text-amber-800">{error}</p>}
+
+      {deals.length === 0 ? (
+        <p className="mt-12 text-center text-gray-500">No deals are available right now.</p>
+      ) : <div className="mt-12 grid gap-7 md:grid-cols-2 lg:grid-cols-3">
         {deals.map((deal) => (
           <div
             key={deal.name}
@@ -69,11 +67,7 @@ const Deals = () => {
 
               <div className="mt-5 flex items-center gap-3">
                 <span className="text-2xl font-black text-orange-600">
-                  Rs. {deal.price}
-                </span>
-
-                <span className="text-gray-400 line-through">
-                  Rs. {deal.oldPrice}
+                  PKR {Number(deal.price).toLocaleString()}
                 </span>
               </div>
 
@@ -86,7 +80,7 @@ const Deals = () => {
             </div>
           </div>
         ))}
-      </div>
+      </div>}
     </section>
   );
 };

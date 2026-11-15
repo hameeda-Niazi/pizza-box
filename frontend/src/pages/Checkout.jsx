@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 const Checkout = () => {
@@ -106,6 +106,18 @@ const Checkout = () => {
       setLoading(false);
     }
   };
+
+  if (cart.length === 0) {
+    return (
+      <section className="mx-auto max-w-4xl px-5 py-24 text-center">
+        <h1 className="text-3xl font-black">Your cart is empty</h1>
+        <p className="mt-3 text-gray-500">Add something delicious before checking out.</p>
+        <Link to="/menu" className="mt-7 inline-block rounded-xl bg-orange-600 px-7 py-3 font-bold text-white hover:bg-orange-700">
+          Browse Menu
+        </Link>
+      </section>
+    );
+  }
 
   return (
     <section className="mx-auto max-w-6xl px-5 py-14">

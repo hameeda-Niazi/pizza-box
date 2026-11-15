@@ -1,5 +1,7 @@
 const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
+const fs = require("node:fs");
+const path = require("node:path");
 
 process.env.MONGO_URI = "mongodb://smoke.invalid/pizzabox";
 process.env.JWT_SECRET = crypto.randomBytes(48).toString("base64url");
@@ -14,10 +16,20 @@ process.env.REDIS_URL = "";
 
 const { app, validateProductionConfiguration } = require("../app");
 const { updateValue, isValidEmail } = require("./rotateAppSecrets");
+const vercelConfig = require("../vercel.json");
 let phase = "initial production configuration";
 
 const run = async () => {
   assert.doesNotThrow(validateProductionConfiguration);
+  phase = "Vercel entry-point configuration";
+  assert.equal(vercelConfig.builds[0].src, "api/index.js");
+  assert.equal(vercelConfig.routes[0].dest, "api/index.js");
+  assert.ok(fs.existsSync(path.join(__dirname, "..", vercelConfig.builds[0].src)));
+  phase = "production administrator password validation";
+  const validAdminPassword = process.env.ADMIN_PASSWORD;
+  process.env.ADMIN_PASSWORD = "short";
+  assert.throws(validateProductionConfiguration, /ADMIN_PASSWORD must be between 12 and 72 bytes/);
+  process.env.ADMIN_PASSWORD = validAdminPassword;
   phase = "secret helper replaces a value";
   assert.equal(updateValue("JWT_SECRET=old\nKEEP=yes\n", "JWT_SECRET", "new"), "JWT_SECRET=new\nKEEP=yes\n");
   phase = "secret helper appends a value";

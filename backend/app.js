@@ -79,6 +79,9 @@ const validateProductionConfiguration = () => {
   if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
     throw new Error("Production administrator credentials are required");
   }
+  if (Buffer.byteLength(process.env.ADMIN_PASSWORD) < 12 || Buffer.byteLength(process.env.ADMIN_PASSWORD) > 72) {
+    throw new Error("ADMIN_PASSWORD must be between 12 and 72 bytes");
+  }
   const hasCloudinary = [
     process.env.CLOUDINARY_CLOUD_NAME,
     process.env.CLOUDINARY_API_KEY,
@@ -124,7 +127,8 @@ app.use("/api/uploads", uploadRoutes);
 
 app.use((err, req, res, next) => {
   if (err.code === "LIMIT_FILE_SIZE") {
-    return res.status(400).json({ message: "Image must be smaller than 5 MB" });
+    const maxFileSizeMb = Math.floor(upload.maxFileSize / (1024 * 1024));
+    return res.status(400).json({ message: `Image must be smaller than ${maxFileSizeMb} MB` });
   }
   console.error(err.message);
   res.status(err.statusCode || 500).json({
@@ -162,8 +166,8 @@ const startServer = async () => {
 };
 
 if (require.main === module && !process.env.VERCEL) {
-  startServer().catch(() => {
-    console.error("Server failed to start; verify private settings and database access.");
+  startServer().catch((error) => {
+    console.error(`Server failed to start: ${error.message}`);
     process.exitCode = 1;
   });
 }

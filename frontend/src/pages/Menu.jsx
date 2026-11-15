@@ -7,37 +7,44 @@ const curatedImages = new Map(products.map((product) => [product.name, product.i
 
 const Menu = () => {
   const [menuProducts, setMenuProducts] = useState(products);
+  const [menuReady, setMenuReady] = useState(false);
+  const [menuError, setMenuError] = useState("");
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
   const categories = ["All", "Pizzas", "Burgers", "Sides", "Wraps", "Drinks", "Desserts", "Deals"];
 
   useEffect(() => {
+    let active = true;
+
     api
       .get("/products")
       .then((response) => {
-        const databaseProducts = Array.isArray(response.data)
-          ? response.data
-              .filter((product) => product.isAvailable !== false)
-              .map((product) => ({
-                ...product,
-                image: curatedImages.get(product.name) || product.image,
-              }))
-          : [];
+        if (!Array.isArray(response.data)) {
+          throw new Error("Menu response was not a product list");
+        }
 
-        if (databaseProducts.length >= products.length) {
+        const databaseProducts = response.data
+          .filter((product) => product.isAvailable !== false)
+          .map((product) => ({
+            ...product,
+            image: product.image || curatedImages.get(product.name) || "",
+          }));
+
+        if (active) {
           setMenuProducts(databaseProducts);
-        } else if (databaseProducts.length > 0) {
-          setMenuProducts((currentProducts) => [
-            ...currentProducts,
-            ...databaseProducts.filter(
-              (product) => !currentProducts.some((item) => item.name === product.name)
-            ),
-          ]);
+          setMenuReady(true);
         }
       })
       .catch(() => {
-        // The curated menu remains available if the API is temporarily offline.
+        if (active) {
+          setMenuError("The live menu is unavailable. You can browse sample items, but ordering is temporarily unavailable.");
+          setMenuReady(true);
+        }
       });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const filteredProducts = menuProducts.filter((product) => {
@@ -52,11 +59,22 @@ const Menu = () => {
   });
 
   const addToCart = (product) => {
-    const existingCart = JSON.parse(localStorage.getItem("cart")) || [];
+    let existingCart;
+    try {
+      const savedCart = JSON.parse(localStorage.getItem("cart"));
+      existingCart = Array.isArray(savedCart) ? savedCart : [];
+    } catch {
+      existingCart = [];
+    }
 
     const existingItem = existingCart.find(
       (item) => item._id === product._id
     );
+
+    if (existingItem?.quantity >= 99) {
+      alert("You can add up to 99 of this item per order.");
+      return;
+    }
 
     let updatedCart;
 
@@ -122,6 +140,9 @@ const Menu = () => {
         ))}
       </div>
 
+      {menuError && <p role="alert" className="mx-auto mt-8 max-w-2xl rounded-xl bg-amber-50 p-4 text-center font-medium text-amber-800">{menuError}</p>}
+      {!menuReady && <p role="status" className="mt-8 text-center text-gray-500">Loading the current menu...</p>}
+
       {filteredProducts.length === 0 ? (
         <div className="py-20 text-center">
           <p className="text-lg font-semibold text-gray-700">
@@ -135,6 +156,7 @@ const Menu = () => {
               key={product._id}
               product={product}
               onAddToCart={addToCart}
+              canOrder={menuReady && /^[a-f\d]{24}$/i.test(product._id)}
             />
           ))}
         </div>

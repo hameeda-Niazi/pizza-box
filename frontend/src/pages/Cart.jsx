@@ -116,7 +116,9 @@ const Cart = () => {
 
                   <button
                     onClick={() => increase(item._id)}
-                    className="rounded-lg bg-gray-100 p-2"
+                    disabled={item.quantity >= 99}
+                    aria-label={`Add one ${item.name}`}
+                    className="rounded-lg bg-gray-100 p-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <FiPlus />
                   </button>

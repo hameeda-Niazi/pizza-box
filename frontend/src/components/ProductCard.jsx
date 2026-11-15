@@ -1,6 +1,6 @@
 import { FiShoppingCart } from "react-icons/fi";
 
-const ProductCard = ({ product, onAddToCart }) => {
+const ProductCard = ({ product, onAddToCart, canOrder = true }) => {
   return (
     <div className="group overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
       <div className="h-52 overflow-hidden bg-orange-50">
@@ -32,10 +32,11 @@ const ProductCard = ({ product, onAddToCart }) => {
 
         <button
           onClick={() => onAddToCart(product)}
-          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-3 font-semibold text-white transition hover:bg-orange-700"
+          disabled={!canOrder}
+          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-3 font-semibold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <FiShoppingCart />
-          Add to Cart
+          {canOrder ? "Add to Cart" : "Ordering unavailable"}
         </button>
       </div>
     </div>
